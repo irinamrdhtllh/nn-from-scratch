@@ -1,10 +1,8 @@
-import matplotlib
 import numpy as np
+import nnfs
+from nnfs.datasets import spiral_data
 
-np.random.seed(0)
-
-
-X = [[1.0, 2.0, 3.0, 2.5], [2.0, 5.0, -1.0, 2.0], [-1.5, 2.7, 3.3, -0.8]]
+nnfs.init()
 
 
 class LayerDense:
@@ -16,10 +14,30 @@ class LayerDense:
         self.output = np.dot(inputs, self.weights + self.biases)
 
 
-layer1 = LayerDense(4, 16)
-layer2 = LayerDense(16, 2)
+class ActivationReLU:
+    def forward(self, inputs):
+        self.output = np.maximum(0, inputs)
 
-layer1.forward(X)
-layer2.forward(layer1.output)
 
-print(layer2.output)
+class ActivationSoftmax:
+    def forward(self, inputs):
+        exp_inputs = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
+        probabilities = exp_inputs / np.sum(exp_inputs, axis=1, keepdims=True)
+        self.output = probabilities
+
+
+X, y = spiral_data(samples=100, classes=3)
+
+dense1 = LayerDense(2, 16)
+activation1 = ActivationReLU()
+
+dense2 = LayerDense(16, 3)
+activation2 = ActivationSoftmax()
+
+dense1.forward(X)
+activation1.forward(dense1.output)
+
+dense2.forward(activation1.output)
+activation2.forward(dense2.output)
+
+print(activation2.output[:5])
