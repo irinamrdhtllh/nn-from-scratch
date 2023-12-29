@@ -3,14 +3,18 @@ import numpy as np
 
 class Loss:
     def calculate(self, output, y):
+        # Calculate sample losses
         sample_losses = self.forward(output, y)
+        # Calculate mean loss
         data_loss = np.mean(sample_losses)
         return data_loss
 
 
 class CategoricalCrossEntropy(Loss):
     def forward(self, y_pred, y_true):
-        samples = len(y_pred)
+        samples = len(y_pred)  # number of samples in a batch
+
+        # Clip data to prevent division by 0
         y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
 
         if len(y_true.shape) == 1:
