@@ -2,14 +2,14 @@ import numpy as np
 import nnfs
 from nnfs.datasets import spiral_data
 
-from layer import Dense
 from activation import ReLU, Softmax
+from layer import Dense
 from loss import CategoricalCrossEntropy
 
 nnfs.init()
 
 
-if __name__ == "__main__":
+def main():
     # Create the dataset
     X, y = spiral_data(samples=100, classes=3)
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         # If loss is smaller, print and save weights and biases aside
         if loss < lowest_loss:
             print(
-                "Lower loss is found!",
+                "Weights and biases updated,",
                 "iteration:",
                 iteration,
                 "loss:",
@@ -71,3 +71,7 @@ if __name__ == "__main__":
             dense1.biases = best_dense1_biases.copy()
             dense2.weights = best_dense2_weights.copy()
             dense2.biases = best_dense2_biases.copy()
+
+
+if __name__ == "__main__":
+    main()
