@@ -5,6 +5,7 @@ from nnfs.datasets import spiral_data
 from activation import ReLU, Softmax, Softmax_CategoricalCrossEntropy
 from layer import Dense
 from loss import CategoricalCrossEntropy
+from optimizer import SGD
 
 nnfs.init()
 
@@ -22,14 +23,15 @@ def trial():
     # Create Softmax classifier's combined activation and loss
     activation_loss = Softmax_CategoricalCrossEntropy()
 
+    # Create optimizer
+    optimizer = SGD()
+
     # Perform a forward pass
     dense1.forward(X)
     activation1.forward(dense1.output)
     dense2.forward(activation1.output)
 
     loss = activation_loss.forward(dense2.output, y)
-
-    print(activation_loss.output[:5])
 
     print("loss:", loss)
 
@@ -47,10 +49,9 @@ def trial():
     activation1.backward(dense2.dinputs)
     dense1.backward(activation1.dinputs)
 
-    print(dense1.dweights)
-    print(dense1.dbiases)
-    print(dense2.dweights)
-    print(dense2.dbiases)
+    # Update wweights and biases
+    optimizer.update_params(dense1)
+    optimizer.update_params(dense2)
 
 
 if __name__ == "__main__":
