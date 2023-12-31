@@ -1,6 +1,6 @@
 import numpy as np
 
-from activation import Softmax
+from modules.activation import Softmax
 
 
 class Loss:

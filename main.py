@@ -2,10 +2,10 @@ import numpy as np
 import nnfs
 from nnfs.datasets import spiral_data
 
-from activation import ReLU
-from layer import Dense
-from loss import Softmax_CategoricalCrossEntropy
-from optimizer import SGD
+from modules.activation import ReLU
+from modules.layer import Dense
+from modules.loss import Softmax_CategoricalCrossEntropy
+from modules.optimizer import SGD
 
 nnfs.init()
 
