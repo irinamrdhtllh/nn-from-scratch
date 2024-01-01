@@ -24,7 +24,7 @@ def trial():
     activation_loss = Softmax_CategoricalCrossEntropy()
 
     # Create optimizer
-    optimizer = SGD(decay=1e-3)
+    optimizer = SGD(decay=1e-3, momentum=0.9)
 
     for epoch in range(10_000 + 1):
         # Perform a forward pass
