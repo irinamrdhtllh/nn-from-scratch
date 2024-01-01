@@ -5,7 +5,7 @@ class ReLU:
     def forward(self, inputs):
         # Calculate output values from inputs
         self.inputs = inputs
-        self.output = np.maximum(0, inputs)
+        self.output = np.maximum(0, self.inputs)
 
     def backward(self, dvalues):
         self.dinputs = dvalues.copy()
@@ -15,8 +15,9 @@ class ReLU:
 
 class Softmax:
     def forward(self, inputs):
+        self.inputs = inputs
         # Get unnormalized probabilities
-        exp_inputs = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
+        exp_inputs = np.exp(self.inputs - np.max(self.inputs, axis=1, keepdims=True))
         # Normalize them for each sample
         probabilities = exp_inputs / np.sum(exp_inputs, axis=1, keepdims=True)
         self.output = probabilities

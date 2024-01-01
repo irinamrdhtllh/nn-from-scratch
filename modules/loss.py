@@ -21,7 +21,8 @@ class CategoricalCrossEntropy(Loss):
 
         if len(y_true.shape) == 1:
             correct_confidences = y_pred_clipped[range(samples), y_true]
-        elif len(y_true.shape) == 2:
+
+        if len(y_true.shape) == 2:
             correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
 
         negative_log_likelihoods = -np.log(correct_confidences)
