@@ -5,7 +5,7 @@ from nnfs.datasets import spiral_data
 from modules.activation import ReLU
 from modules.layer import Dense
 from modules.loss import Softmax_CategoricalCrossEntropy
-from modules.optimizer import SGD, AdaGrad
+from modules.optimizer import SGD, AdaGrad, RMSProp
 
 nnfs.init()
 
@@ -24,7 +24,7 @@ def trial():
     activation_loss = Softmax_CategoricalCrossEntropy()
 
     # Create optimizer
-    optimizer = AdaGrad(decay=1e-4)
+    optimizer = RMSProp(learning_rate=0.02, decay=1e-5, rho=0.999)
 
     for epoch in range(10_000 + 1):
         # Perform a forward pass
