@@ -42,6 +42,28 @@ class CategoricalCrossEntropy(Loss):
         # Normalize the gradient
         self.dinputs = self.dinputs / samples
 
+    def regularization_loss(self, layer):
+        regularization_loss = 0
+
+        # L1 regularization - weights
+        if layer.weight_lambda_l1 > 0:
+            regularization_loss += layer.weight_lambda_l1 * np.sum(
+                np.abs(layer.weights)
+            )
+
+        # L1 regularization - biases
+        if layer.bias_lambda_l1 > 0:
+            regularization_loss += layer.bias_lambda_l1 * np.sum(np.abs(layer.biases))
+
+        # L2 regularization -weights
+        if layer.weight_lambda_l2 > 0:
+            regularization_loss += layer.weight_lambda_l2 * np.sum(layer.weights**2)
+
+        if layer.bias_lambda_l2 > 0:
+            regularization_loss += layer.bias_lambda_l2 * np.sum(layer.biases**2)
+
+        return regularization_loss
+
 
 class Softmax_CategoricalCrossEntropy:
     """Combined softmax activation and categorical cross entropy loss for faster backward step"""
