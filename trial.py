@@ -3,7 +3,7 @@ import nnfs
 from nnfs.datasets import spiral_data
 
 from modules.activation import ReLU
-from modules.layer import Dense
+from modules.layer import Dense, Dropout
 from modules.loss import Softmax_CategoricalCrossEntropy
 from modules.optimizer import Adam
 
@@ -16,7 +16,8 @@ def train(X_train, y_train):
         # Perform a forward pass
         dense1.forward(X_train)
         activation1.forward(dense1.output)
-        dense2.forward(activation1.output)
+        dropout1.forward(activation1.output)
+        dense2.forward(dropout1.output)
 
         data_loss = activation_loss.forward(dense2.output, y_train)
 
@@ -48,7 +49,8 @@ def train(X_train, y_train):
         # Backward pass
         activation_loss.backward(activation_loss.output, y_train)
         dense2.backward(activation_loss.dinputs)
-        activation1.backward(dense2.dinputs)
+        dropout1.backward(dense2.dinputs)
+        activation1.backward(dropout1.dinputs)
         dense1.backward(activation1.dinputs)
 
         # Update wweights and biases
@@ -81,9 +83,10 @@ if __name__ == "__main__":
     # Create the model
     dense1 = Dense(2, 512, weight_lambda_l2=5e-4, bias_lambda_l2=5e-4)
     activation1 = ReLU()
+    dropout1 = Dropout(0.1)
     dense2 = Dense(512, 3)
     activation_loss = Softmax_CategoricalCrossEntropy()
-    optimizer = Adam(learning_rate=0.02, decay=5e-7)
+    optimizer = Adam(learning_rate=0.05, decay=5e-5)
 
     # Train the model
     train(X_train, y_train)
