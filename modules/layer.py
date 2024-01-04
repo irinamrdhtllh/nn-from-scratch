@@ -50,3 +50,24 @@ class Dense:
 
         # Gradient on values
         self.dinputs = np.dot(dvalues, self.weights.T)
+
+
+class Dropout:
+    def __init__(self, rate):
+        # Store dropout rate
+        self.rate = 1 - rate
+
+    def forward(self, inputs):
+        self.inputs = inputs
+
+        # Generate and save scaled mask
+        self.binary_mask = (
+            np.random.binomial(1, self.rate, size=inputs.shape) / self.rate
+        )
+
+        # Apply mask to output values
+        self.output = inputs * self.binary_mask
+
+    def backward(self, dvalues):
+        # Gradient on values
+        self.dinputs = dvalues * self.binary_mask
