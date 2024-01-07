@@ -45,3 +45,12 @@ class Sigmoid:
     def backward(self, dvalues):
         # Calculate the derivative
         self.dinputs = dvalues * (1 - self.output) * self.output
+
+
+class Linear:
+    def forward(self, inputs):
+        self.inputs = inputs
+        self.output = inputs
+
+    def backward(self, dvalues):
+        self.dinputs = dvalues.copy()
