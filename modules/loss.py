@@ -7,7 +7,6 @@ class Loss:
     def calculate(self, output, y):
         # Calculate sample losses
         sample_losses = self.forward(output, y)
-
         # Calculate mean loss
         data_loss = np.mean(sample_losses)
 
@@ -39,13 +38,13 @@ class Loss:
 class CategoricalCrossEntropy(Loss):
     def forward(self, y_pred, y_true):
         # Number of samples in a batch
-        samples = len(y_pred)
+        n_samples = len(y_pred)
 
         # Clip data to prevent division by 0
         y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
 
         if len(y_true.shape) == 1:
-            correct_confidences = y_pred_clipped[range(samples), y_true]
+            correct_confidences = y_pred_clipped[range(n_samples), y_true]
 
         if len(y_true.shape) == 2:
             correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
@@ -56,18 +55,18 @@ class CategoricalCrossEntropy(Loss):
 
     def backward(self, dvalues, y_true):
         # Number of samples
-        samples = len(dvalues)
+        n_samples = len(dvalues)
         # Number of labels in every sample
-        labels = len(dvalues[0])
+        n_labels = len(dvalues[0])
 
         # If labels are sparse, turn them into one-hot vector
         if len(y_true.shape) == 1:
-            y_true = np.eye(labels)[y_true]
+            y_true = np.eye(n_labels)[y_true]
 
         # Calculate the gradient
         self.dinputs = -y_true / dvalues
         # Normalize the gradient
-        self.dinputs = self.dinputs / samples
+        self.dinputs = self.dinputs / n_samples
 
 
 class Softmax_CategoricalCrossEntropy:
@@ -89,16 +88,16 @@ class Softmax_CategoricalCrossEntropy:
 
     def backward(self, dvalues, y_true):
         # Number of samples
-        samples = len(dvalues)
+        n_samples = len(dvalues)
         # If labels are one-hot encoded, turn them into discrete index values
         if len(y_true.shape) == 2:
             y_true = np.argmax(y_true, axis=1)
 
         self.dinputs = dvalues.copy()
         # Calculate the gradient
-        self.dinputs[range(samples), y_true] -= 1
+        self.dinputs[range(n_samples), y_true] -= 1
         # Normalize the gradient
-        self.dinputs = self.dinputs / samples
+        self.dinputs = self.dinputs / n_samples
 
 
 class BinaryCrossEntropy(Loss):
@@ -116,15 +115,33 @@ class BinaryCrossEntropy(Loss):
 
     def backward(self, dvalues, y_true):
         # Number of samples
-        samples = len(dvalues)
+        n_samples = len(dvalues)
         # Number of output in every sample
-        outputs = len(dvalues[0])
+        n_outputs = len(dvalues[0])
 
         # Clip data to prevent division by 0
         clipped_dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
 
         # Calculate and normalize the gradient
         self.dinputs = (
-            -(y_true / clipped_dvalues - (1 - y_true) / (1 - clipped_dvalues)) / outputs
+            -(y_true / clipped_dvalues - (1 - y_true) / (1 - clipped_dvalues))
+            / n_outputs
         )
-        self.dinputs = self.dinputs / samples
+        self.dinputs = self.dinputs / n_samples
+
+
+class MeanSquaredError:
+    def forward(self, y_pred, y_true):
+        # Calculate loss
+        sample_losses = np.mean((y_true - y_pred) ** 2, axis=-1)
+        return sample_losses
+
+    def backward(self, dvalues, y_true):
+        # Number of samples
+        n_samples = len(dvalues)
+        # Number of outputs in every samples
+        n_outputs = len(dvalues[0])
+
+        # Calculate and normalize the gradient
+        self.dinputs = -2 * (y_true - dvalues) / n_outputs
+        self.dinputs = self.dinputs / n_samples
