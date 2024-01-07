@@ -145,3 +145,20 @@ class MeanSquaredError:
         # Calculate and normalize the gradient
         self.dinputs = -2 * (y_true - dvalues) / n_outputs
         self.dinputs = self.dinputs / n_samples
+
+
+class MeanAbsoluteError:
+    def forward(self, y_pred, y_true):
+        # Calculate loss
+        sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
+        return sample_losses
+
+    def backward(self, dvalues, y_true):
+        # Number of samples
+        n_samples = len(dvalues)
+        # Number of outputs in every samples
+        n_outputs = len(dvalues[0])
+
+        # Calculate and normalize the gradient
+        self.dinputs = np.sign(y_true - dvalues) / n_outputs
+        self.dinputs = self.dinputs / n_samples
