@@ -130,7 +130,7 @@ class BinaryCrossEntropy(Loss):
         self.dinputs = self.dinputs / n_samples
 
 
-class MeanSquaredError:
+class MeanSquaredError(Loss):
     def forward(self, y_pred, y_true):
         # Calculate loss
         sample_losses = np.mean((y_true - y_pred) ** 2, axis=-1)
@@ -147,7 +147,7 @@ class MeanSquaredError:
         self.dinputs = self.dinputs / n_samples
 
 
-class MeanAbsoluteError:
+class MeanAbsoluteError(Loss):
     def forward(self, y_pred, y_true):
         # Calculate loss
         sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
