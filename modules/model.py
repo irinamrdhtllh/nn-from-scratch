@@ -1,10 +1,13 @@
 from modules.layer import Input
+from modules.activation import Softmax
+from modules.loss import CategoricalCrossEntropy, Softmax_CategoricalCrossEntropy
 
 
 class Model:
     def __init__(self):
         # Create a list of network objects
         self.layers = []
+        self.softmax_loss_output = None
 
     def add(self, layer):
         # Add objects to the model
@@ -48,15 +51,31 @@ class Model:
         # Update loss object with trainable layers
         self.loss_func.remember_trainable_layers(self.trainable_layers)
 
-    def forward(self, X):
+        # fmt: off
+        if (
+            isinstance(self.layers[-1], Softmax) and 
+            isinstance(self.loss_func, CategoricalCrossEntropy)
+        ):
+            self.softmax_loss_output = Softmax_CategoricalCrossEntropy()
+        # fmt: on
+
+    def forward(self, X, training):
         # Perform forward pass
-        self.input_layer.forward(X)
+        self.input_layer.forward(X, training)
         for layer in self.layers:
-            layer.forward(layer.prev.output)
+            layer.forward(layer.prev.output, training)
 
         return layer.output
 
     def backward(self, output, y):
+        if self.softmax_loss_output is not None:
+            # Perform backward pass
+            self.softmax_loss_output.backward(output, y)
+            self.layers[-1].dinputs = self.softmax_loss_output.dinputs
+            for layer in reversed(self.layers[:-1]):
+                layer.backward(layer.next.dinputs)
+            return
+
         # Perform backward pass
         self.loss_func.backward(output, y)
         for layer in reversed(self.layers):
@@ -69,7 +88,7 @@ class Model:
         # Main training loop
         for epoch in range(1, epochs + 1):
             # Perform the forward pass
-            output = self.forward(X)
+            output = self.forward(X, training=True)
 
             # Calculate loss
             data_loss, regularization_loss = self.loss_func.calculate(
@@ -104,7 +123,7 @@ class Model:
             X_val, y_val = validation_data
 
             # Perform the forward pass
-            output = self.forward(X_val)
+            output = self.forward(X_val, training=False)
 
             # Calculate the loss
             loss = self.loss_func.calculate(output, y_val)
