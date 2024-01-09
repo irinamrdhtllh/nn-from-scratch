@@ -2,7 +2,7 @@ import numpy as np
 
 
 class ReLU:
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         # Calculate output values from inputs
         self.inputs = inputs
         self.output = np.maximum(0, self.inputs)
@@ -17,7 +17,7 @@ class ReLU:
 
 
 class Softmax:
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         # Get unnormalized probabilities
         exp_inputs = np.exp(self.inputs - np.max(self.inputs, axis=1, keepdims=True))
@@ -43,7 +43,7 @@ class Softmax:
 
 
 class Sigmoid:
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         # Save input and calculate output of the sigmoid function
         self.inputs = inputs
         self.output = 1 / (1 + np.exp(-inputs))
@@ -57,7 +57,7 @@ class Sigmoid:
 
 
 class Linear:
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         self.output = inputs
 
