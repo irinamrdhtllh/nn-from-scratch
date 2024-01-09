@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Input:
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.output = inputs
 
 
@@ -25,7 +25,7 @@ class Dense:
         self.bias_lambda_l1 = bias_lambda_l1
         self.bias_lambda_l2 = bias_lambda_l2
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         # Calculate output values from inputs, weights, and biases
         self.inputs = inputs
         self.output = np.dot(self.inputs, self.weights) + self.biases
@@ -62,8 +62,12 @@ class Dropout:
         # Store dropout rate
         self.rate = 1 - rate
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
+
+        if not training:
+            self.output = inputs.copy()
+            return
 
         # Generate and save scaled mask
         self.binary_mask = (
