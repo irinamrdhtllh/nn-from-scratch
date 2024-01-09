@@ -12,6 +12,9 @@ class ReLU:
         # Zero gradient if the input value is negative
         self.dinputs[self.inputs <= 0] = 0
 
+    def predictions(self, outputs):
+        return outputs
+
 
 class Softmax:
     def forward(self, inputs):
@@ -35,6 +38,9 @@ class Softmax:
             # Calculate sample-wise gradient
             self.dinputs[i] = np.dot(jacobian_matrix, dvalue)
 
+    def predictions(self, outputs):
+        return np.argmax(outputs, axis=1)
+
 
 class Sigmoid:
     def forward(self, inputs):
@@ -46,6 +52,9 @@ class Sigmoid:
         # Calculate the derivative
         self.dinputs = dvalues * (1 - self.output) * self.output
 
+    def predictions(self, outputs):
+        return (outputs > 0.5) * 1
+
 
 class Linear:
     def forward(self, inputs):
@@ -54,3 +63,6 @@ class Linear:
 
     def backward(self, dvalues):
         self.dinputs = dvalues.copy()
+
+    def predictions(self, outputs):
+        return outputs

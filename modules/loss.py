@@ -4,35 +4,46 @@ from modules.activation import Softmax
 
 
 class Loss:
-    def calculate(self, output, y):
+    def remember_trainable_layers(self, trainable_layers):
+        self.trainable_layers = trainable_layers
+
+    def regularization_loss(self):
+        regularization_loss = 0
+
+        for layer in self.trainable_layers:
+            # L1 regularization - weights
+            if layer.weight_lambda_l1 > 0:
+                regularization_loss += layer.weight_lambda_l1 * np.sum(
+                    np.abs(layer.weights)
+                )
+
+            # L1 regularization - biases
+            if layer.bias_lambda_l1 > 0:
+                regularization_loss += layer.bias_lambda_l1 * np.sum(
+                    np.abs(layer.biases)
+                )
+
+            # L2 regularization -weights
+            if layer.weight_lambda_l2 > 0:
+                regularization_loss += layer.weight_lambda_l2 * np.sum(
+                    layer.weights**2
+                )
+
+            if layer.bias_lambda_l2 > 0:
+                regularization_loss += layer.bias_lambda_l2 * np.sum(layer.biases**2)
+
+        return regularization_loss
+
+    def calculate(self, output, y, *, include_regularization=False):
         # Calculate sample losses
         sample_losses = self.forward(output, y)
         # Calculate mean loss
         data_loss = np.mean(sample_losses)
 
-        return data_loss
+        if not include_regularization:
+            return data_loss
 
-    def regularization_loss(self, layer):
-        regularization_loss = 0
-
-        # L1 regularization - weights
-        if layer.weight_lambda_l1 > 0:
-            regularization_loss += layer.weight_lambda_l1 * np.sum(
-                np.abs(layer.weights)
-            )
-
-        # L1 regularization - biases
-        if layer.bias_lambda_l1 > 0:
-            regularization_loss += layer.bias_lambda_l1 * np.sum(np.abs(layer.biases))
-
-        # L2 regularization -weights
-        if layer.weight_lambda_l2 > 0:
-            regularization_loss += layer.weight_lambda_l2 * np.sum(layer.weights**2)
-
-        if layer.bias_lambda_l2 > 0:
-            regularization_loss += layer.bias_lambda_l2 * np.sum(layer.biases**2)
-
-        return regularization_loss
+        return data_loss, self.regularization_loss()
 
 
 class CategoricalCrossEntropy(Loss):

@@ -1,6 +1,11 @@
 import numpy as np
 
 
+class Input:
+    def forward(self, inputs):
+        self.output = inputs
+
+
 class Dense:
     def __init__(
         self,
