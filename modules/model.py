@@ -91,19 +91,11 @@ class Model:
 
         # Default value if batch size is not being set
         train_steps = 1
-        if validation_data is not None:
-            val_steps = 1
-            X_val, y_val = validation_data
 
         if batch_size is not None:
             train_steps = len(X) // batch_size
             if train_steps * batch_size < len(X):
                 train_steps += 1
-
-            if validation_data is not None:
-                val_steps = len(X_val) // batch_size
-                if val_steps * batch_size < len(X_val):
-                    val_steps += 1
 
         # Main training loop
         for epoch in range(1, epochs + 1):
@@ -172,30 +164,40 @@ class Model:
             )
 
             if validation_data is not None:
-                # Reset accumulated values in loss and accuracy
-                self.loss_func.new_pass()
-                self.accuracy.new_pass()
+                self.evaluate(*validation_data, batch_size=batch_size)
 
-                for step in range(val_steps):
-                    if batch_size is None:
-                        batch_X = X_val
-                        batch_y = y_val
-                    else:
-                        batch_X = X_val[step * batch_size : (step + 1) * batch_size]
-                        batch_y = y_val[step * batch_size : (step + 1) * batch_size]
+    def evaluate(self, X_val, y_val, *, batch_size=None):
+        val_steps = 1
 
-                    # Perform forward pass
-                    output = self.forward(batch_X, training=False)
+        if batch_size is not None:
+            val_steps = len(X_val) // batch_size
+            if val_steps * batch_size < len(X_val):
+                val_steps += 1
 
-                    # Calculate loss
-                    self.loss_func.calculate(output, batch_y)
+        # Reset accumulated values in loss and accuracy
+        self.loss_func.new_pass()
+        self.accuracy.new_pass()
 
-                    # Get predictions and calculate the accuracy
-                    predictions = self.output_layer.predictions(output)
-                    self.accuracy.calculate(predictions, batch_y)
+        for step in range(val_steps):
+            if batch_size is None:
+                batch_X = X_val
+                batch_y = y_val
+            else:
+                batch_X = X_val[step * batch_size : (step + 1) * batch_size]
+                batch_y = y_val[step * batch_size : (step + 1) * batch_size]
 
-                # Get validation loss and accuracy
-                val_loss = self.loss_func.calculate_accumulated()
-                val_accuracy = self.accuracy.calculate_accumulated()
+            # Perform forward pass
+            output = self.forward(batch_X, training=False)
 
-                print(f"validation, acc: {val_accuracy:.3f}, loss: {val_loss:.3f}")
+            # Calculate loss
+            self.loss_func.calculate(output, batch_y)
+
+            # Get predictions and calculate the accuracy
+            predictions = self.output_layer.predictions(output)
+            self.accuracy.calculate(predictions, batch_y)
+
+        # Get validation loss and accuracy
+        val_loss = self.loss_func.calculate_accumulated()
+        val_accuracy = self.accuracy.calculate_accumulated()
+
+        print(f"validation, acc: {val_accuracy:.3f}, loss: {val_loss:.3f}")
