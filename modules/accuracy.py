@@ -2,6 +2,10 @@ import numpy as np
 
 
 class Accuracy:
+    def new_pass(self):
+        self.accumulated_sum = 0
+        self.accumulated_count = 0
+
     def calculate(self, predictions, y):
         # Get comparison results
         comparisons = self.compare(predictions, y)
@@ -9,6 +13,15 @@ class Accuracy:
         # Calculate the accuracy
         accuracy = np.mean(comparisons)
 
+        # Add accumulated sum of matching values and sample count
+        self.accumulated_sum += np.sum(comparisons)
+        self.accumulated_count += len(comparisons)
+
+        return accuracy
+
+    def calculate_accumulated(self):
+        # Calculate the accuracy
+        accuracy = self.accumulated_sum / self.accumulated_count
         return accuracy
 
 

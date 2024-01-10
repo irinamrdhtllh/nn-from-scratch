@@ -7,6 +7,10 @@ class Loss:
     def remember_trainable_layers(self, trainable_layers):
         self.trainable_layers = trainable_layers
 
+    def new_pass(self):
+        self.accumulated_sum = 0
+        self.accumulated_count = 0
+
     def regularization_loss(self):
         regularization_loss = 0
 
@@ -39,6 +43,19 @@ class Loss:
         sample_losses = self.forward(output, y)
         # Calculate mean loss
         data_loss = np.mean(sample_losses)
+
+        # Add accumulated sum of losses and sample count
+        self.accumulated_sum += np.sum(sample_losses)
+        self.accumulated_count += len(sample_losses)
+
+        if not include_regularization:
+            return data_loss
+
+        return data_loss, self.regularization_loss()
+
+    def calculate_accumulated(self, *, include_regularization=False):
+        # Calculate mean loss
+        data_loss = self.accumulated_sum / self.accumulated_count
 
         if not include_regularization:
             return data_loss
