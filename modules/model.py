@@ -1,4 +1,6 @@
 import os
+import pickle
+import copy
 
 from modules.layer import Input
 from modules.activation import Softmax
@@ -15,7 +17,7 @@ class Model:
         # Add objects to the model
         self.layers.append(layer)
 
-    def set(self, *, loss, optimizer, accuracy):
+    def set(self, *, loss=None, optimizer=None, accuracy=None):
         self.loss_func = loss
         self.optimizer = optimizer
         self.accuracy = accuracy
@@ -51,7 +53,8 @@ class Model:
                 self.trainable_layers.append(self.layers[i])
 
         # Update loss object with trainable layers
-        self.loss_func.remember_trainable_layers(self.trainable_layers)
+        if self.loss_func is not None:
+            self.loss_func.remember_trainable_layers(self.trainable_layers)
 
         # fmt: off
         if (
@@ -201,3 +204,56 @@ class Model:
         val_accuracy = self.accuracy.calculate_accumulated()
 
         print(f"validation, acc: {val_accuracy:.3f}, loss: {val_loss:.3f}")
+
+    def get_parameters(self):
+        parameters = []
+
+        # Get parameters from all trainable layers
+        for layer in self.trainable_layers:
+            parameters.append(layer.get_parameters())
+
+        return parameters
+
+    def set_parameters(self, parameters):
+        # Update each layers with each set of the parameters
+        for parameter_set, layer in zip(parameters, self.trainable_layers):
+            layer.set_parameters(*parameter_set)
+
+    def save_parameters(self, path):
+        # Open a file in the binary-write mode and save model's parameters
+        with open(path, "wb") as f:
+            pickle.dump(self.get_parameters(), f)
+
+    def load_parameters(self, path):
+        # Open file in the binary-read mode, load weights and update trainable layers
+        with open(path, "rb") as f:
+            self.set_parameters(pickle.load(f))
+
+    def save(self, path):
+        # Make a deep copy of current model instance
+        model = copy.deepcopy(self)
+
+        # Reset accumulated values in losss and accuracy objects
+        model.loss_func.new_pass()
+        model.accuracy.new_pass()
+
+        # Remove data from input layer and gradient from the loss object
+        model.input_layer.__dict__.pop("output", None)
+        model.loss_func.__dict__.pop("dinputs", None)
+
+        # Remove all layers' properties
+        for layer in model.layers:
+            for property in ["inputs", "output", "dinputs", "dweights", "dbiases"]:
+                layer.__dict__.pop(property, None)
+
+        # Open a file in the binary write-mode and save the model
+        with open(path, "wb") as f:
+            pickle.dump(model, f)
+
+    @staticmethod
+    def load(path):
+        # Open file in the binary-read mode, load the model
+        with open(path, "rb") as f:
+            model = pickle.load(f)
+
+        return model
