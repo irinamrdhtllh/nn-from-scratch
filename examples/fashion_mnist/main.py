@@ -42,8 +42,8 @@ def create_data(path):
 
 
 if __name__ == "__main__":
-    img_path = "examples/fashion_mnist/fashion_mnist_images"
-    X_train, y_train, X_test, y_test = create_data(img_path)
+    path = "examples/fashion_mnist"
+    X_train, y_train, X_test, y_test = create_data(os.path.join(path, "images"))
 
     # Shuffle the training dataset
     keys = np.array(range(X_train.shape[0]))
@@ -62,17 +62,17 @@ if __name__ == "__main__":
     # Create the model
     model = Model()
 
-    model.add(Dense(X_train.shape[1], 64))
+    model.add(Dense(X_train.shape[1], 128))
     model.add(ReLU())
-    model.add(Dense(64, 64))
+    model.add(Dense(128, 128))
     model.add(ReLU())
-    model.add(Dense(64, 10))
+    model.add(Dense(128, 10))
     model.add(Softmax())
 
     # Set loss, optimizer, and accuracy
     model.set(
         loss=CategoricalCrossEntropy(),
-        optimizer=Adam(decay=5e-5),
+        optimizer=Adam(decay=1e-3),
         accuracy=Categorical(),
     )
 
@@ -82,8 +82,17 @@ if __name__ == "__main__":
     model.train(
         X_train,
         y_train,
-        epochs=5,
+        epochs=10,
         batch_size=128,
         print_every=100,
         validation_data=(X_test, y_test),
     )
+
+    # Save parameters
+    model.save_parameters(os.path.join(path, "model_params.parms"))
+
+    # Load the parameters
+    model.load_parameters(os.path.join(path, "model_params.parms"))
+
+    # Evaluate the model
+    model.evaluate(X_test, y_test)
