@@ -162,3 +162,5 @@ cython_debug/
 # misc
 *images
 *.zip
+*.parms
+*.model
