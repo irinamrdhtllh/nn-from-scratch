@@ -1,6 +1,7 @@
 import os
 import pickle
 import copy
+import numpy as np
 
 from modules.layer import Input
 from modules.activation import Softmax
@@ -257,3 +258,25 @@ class Model:
             model = pickle.load(f)
 
         return model
+
+    def predict(self, X, *, batch_size=None):
+        # Calculate number of steps
+        predict_steps = 1
+        if batch_size is not None:
+            predict_steps = len(X) // batch_size
+            if predict_steps * batch_size < len(X):
+                predict_steps += 1
+
+        output = []
+
+        for step in range(predict_steps):
+            if batch_size is None:
+                batch_X = X
+            else:
+                batch_X = X[step * batch_size : (step + 1) * batch_size]
+
+            # Perform the forward pass
+            batch_output = self.forward(batch_X, training=False)
+            output.append(batch_output)
+
+        return np.vstack(output)
