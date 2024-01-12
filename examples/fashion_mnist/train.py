@@ -88,11 +88,5 @@ if __name__ == "__main__":
         validation_data=(X_test, y_test),
     )
 
-    # Save parameters
-    model.save_parameters(os.path.join(path, "model_params.parms"))
-
-    # Load the parameters
-    model.load_parameters(os.path.join(path, "model_params.parms"))
-
-    # Evaluate the model
-    model.evaluate(X_test, y_test)
+    # Save the model
+    model.save(os.path.join(path, "fashion_mnist.model"))
